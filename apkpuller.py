@@ -27,7 +27,6 @@ def list_apps(keyword):
     except subprocess.CalledProcessError as e:
         print("[-] No package names were found with the keyword provided.")
         sys.exit(1)
-        # Handle the error here
 
 def list_apks(package_name):
     try:
@@ -43,11 +42,17 @@ def list_apks(package_name):
         return apk_path
     except subprocess.CalledProcessError as e:
         print("[-] apk files not found")
+        sys.exit(1)
 
 def pull_apks(apk_path):
-    for apk in apk_path:
-        cmd = 'adb pull {}'.format(apk)
-        output = subprocess.check_output(cmd, shell=True)
+    try:
+        for apk in apk_path:
+            cmd = 'adb pull {}'.format(apk)
+            output = subprocess.check_output(cmd, shell=True)
+        print("[*] All apk files pulled")
+    except subprocess.CalledProcessError as e:
+        print("[-] apk files not found")
+        sys.exit(1)
 
 def print_banner():
     banner = """
