@@ -9,6 +9,7 @@ def select_device():
 
     # Parse the output to get a list of available devices
     devices = []
+    transports = []
     lines = result.stdout.strip().split('\n')[1:]
     if len(lines) > 1:
         for line in lines:
@@ -24,15 +25,15 @@ def select_device():
         # Display the list of available devices
         print('Available devices:')
         for i, device in enumerate(devices):
-            #print(f'{i+1}. {device["serial"]} ({device["transport_id"]})')
             print('%d)' % (i+1), device['device_name'],'->', 'transport_id:',device['transport'])
+            
         # Prompt the user to select a device
         while True:
             selection = input('Select a device (1-%d): ' % len(devices))
             try:
                 index = int(selection) - 1
                 if 0 <= index < len(devices):
-                    return device['transport'][index-1]
+                    return devices[index]['transport']
             except ValueError:
                 pass
             print('Invalid selection.')
@@ -45,9 +46,6 @@ def list_apps(keyword, transport_id):
         cmd = 'adb shell pm list packages | grep {}'.format(keyword)
     else:
         cmd = 'adb -t{0} shell pm list packages | grep {1}'.format(transport_id, keyword)
-    
-    print(cmd)
-    
     try:
         output = subprocess.check_output(cmd, shell=True)
         print("[+] Packages Found!!!")
@@ -78,7 +76,6 @@ def list_apks(package_name, transport_id):
             cmd = 'adb shell pm path {}'.format(package_name)
         else:
             cmd = 'adb -t{0} shell pm path {1}'.format(transport_id, package_name)
-        print(cmd)
         print("[+] apk files found:")
         output = subprocess.check_output(cmd, shell=True)
         apk_path = output.decode().strip().replace('package:', '').split("\n")
@@ -98,7 +95,6 @@ def pull_apks(apk_path, transport_id):
                 cmd = 'adb pull {}'.format(apk)
             else:
                 cmd = 'adb -t{0} pull {1}'.format(transport_id, apk)
-            print(cmd)
             output = subprocess.check_output(cmd, shell=True)
         print("[*] All apk files pulled")
     except subprocess.CalledProcessError as e:
