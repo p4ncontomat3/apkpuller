@@ -4,10 +4,8 @@ import os
 import subprocess
 
 def select_device():
-    # Run the adb devices -l command and get the output
     result = subprocess.run(['adb', 'devices', '-l'], capture_output=True, text=True)
 
-    # Parse the output to get a list of available devices
     devices = []
     transports = []
     lines = result.stdout.strip().split('\n')[1:]
@@ -22,12 +20,10 @@ def select_device():
                 'transport' : transport[1]
             })
 
-        # Display the list of available devices
         print('Available devices:')
         for i, device in enumerate(devices):
             print('%d)' % (i+1), device['device_name'],'->', 'transport_id:',device['transport'])
             
-        # Prompt the user to select a device
         while True:
             selection = input('Select a device (1-%d): ' % len(devices))
             try:
@@ -38,8 +34,8 @@ def select_device():
                 pass
             print('Invalid selection.')
     else:
+        print('[*] Only one device attached')
         return 0
-        print('Only one device attached')
 
 def list_apps(keyword, transport_id):
     if transport_id == 0:
@@ -64,7 +60,7 @@ def list_apps(keyword, transport_id):
             except ValueError:
                 pass
 
-            print("Invalid choice. Please try again.")
+            print("[-] Invalid choice. Please try again.")
     except subprocess.CalledProcessError as e:
         print("[-] No package names were found with the keyword provided.")
         sys.exit(1)
@@ -125,13 +121,16 @@ def main():
         sys.exit(1)
         
     else:
-        print_banner()
-        keyword = sys.argv[1]
-        print("[*] Checking package names matching {}".format(keyword))
-        transport_id = select_device()
-        package_name = list_apps(keyword, transport_id)
-        apk_path = list_apks(package_name, transport_id)
-        pull_apks(apk_path, transport_id)
+        try:
+            print_banner()
+            keyword = sys.argv[1]
+            print("[*] Checking package names matching {}".format(keyword))
+            transport_id = select_device()
+            package_name = list_apps(keyword, transport_id)
+            apk_path = list_apks(package_name, transport_id)
+            pull_apks(apk_path, transport_id)
+        except KeyboardInterrupt:
+            print("\n\n[<3] bai bai")
 
 
 
